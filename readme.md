@@ -21,6 +21,15 @@ A Windows system-tray app for **Guild Wars 2** that shows daily **Raid Bounties*
 - **Windows** (x64)
 - [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (if not using a self-contained build)
 
+## Download
+
+Pre-built releases are available on the [Releases](https://github.com/a727891/gw2_pve_desktop/releases) page:
+
+1. Open the [Releases](https://github.com/a727891/gw2_pve_desktop/releases) page.
+2. Choose the latest release (or a specific version).
+3. Under **Assets**, download the Windows build (e.g. `Gw2PveDesktop.exe` or a zip containing it).
+4. Run the executable (unzip first if you downloaded an archive).
+
 ## Build
 
 ```bash
