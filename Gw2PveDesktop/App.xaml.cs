@@ -20,6 +20,7 @@ public partial class App : Application
     private NotifyIcon? _notifyIcon;
     private System.Drawing.Icon? _trayIcon;
     private PopupWindow? _popup;
+    private bool _hasShownPopupOnStartup;
     private readonly DataService _dataService;
     private readonly ScheduleService _scheduleService;
     private readonly BountyIconCacheService _iconCache;
@@ -154,6 +155,11 @@ public partial class App : Application
             var strikeData = await _dataService.GetStrikeDataAsync();
             _scheduleService.LoadData(maps, instabilities, bounties, raidData, strikeData);
             _popup?.RefreshData();
+            if (!_hasShownPopupOnStartup)
+            {
+                _hasShownPopupOnStartup = true;
+                ShowPopup();
+            }
         }
         catch (Exception ex)
         {
