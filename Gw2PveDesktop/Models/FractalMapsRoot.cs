@@ -7,6 +7,12 @@ public class FractalMapsRoot
     [JsonPropertyName("DailyTier")]
     public List<List<string>> DailyTier { get; set; } = new();
 
+    [JsonPropertyName("challengeMotes")]
+    public List<int> ChallengeMotes { get; set; } = new();
+
+    [JsonPropertyName("scales")]
+    public Dictionary<string, string> Scales { get; set; } = new();
+
     [JsonPropertyName("maps")]
     public Dictionary<string, FractalMapEntry> Maps { get; set; } = new();
 

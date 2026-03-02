@@ -13,6 +13,7 @@ public partial class PopupWindow : Window
     private readonly BountyIconCacheService _iconCache;
     private readonly DispatcherTimer _countdownTimer;
     private bool _wasBeforeReset = true;
+    private bool _showFractalCMs;
 
     public PopupWindow(ScheduleService scheduleService, BountyIconCacheService iconCache)
     {
@@ -119,15 +120,62 @@ public partial class PopupWindow : Window
         Hide();
     }
 
+    private void FractalsDailiesButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_showFractalCMs)
+        {
+            _showFractalCMs = false;
+            ApplyFractalsMode(_scheduleService.GetSchedule());
+        }
+    }
+
+    private void FractalsCMButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_showFractalCMs)
+        {
+            _showFractalCMs = true;
+            ApplyFractalsMode(_scheduleService.GetSchedule());
+        }
+    }
+
+    private void ApplyFractalsMode(ScheduleViewModel schedule)
+    {
+        var titleBrush = (System.Windows.Media.Brush)FindResource("GuildWarsBodyBrush");
+        var mutedBrush = (System.Windows.Media.Brush)FindResource("GuildWarsMutedBrush");
+
+        if (_showFractalCMs)
+        {
+            FractalsDailiesPanel.Visibility = Visibility.Collapsed;
+            FractalsCMPanel.Visibility = Visibility.Visible;
+            FractalsDailiesButton.Foreground = mutedBrush;
+            FractalsCMButton.Foreground = titleBrush;
+
+            var cm = schedule.FractalsCM.Fractals;
+            var half = (cm.Count + 1) / 2;
+            FractalsCMLeftList.ItemsSource = cm.Take(half).ToList();
+            FractalsCMRightList.ItemsSource = cm.Skip(half).ToList();
+            _ = LoadInstabilityIconsAsync(cm, Enumerable.Empty<FractalEntryViewModel>());
+        }
+        else
+        {
+            FractalsDailiesPanel.Visibility = Visibility.Visible;
+            FractalsCMPanel.Visibility = Visibility.Collapsed;
+            FractalsDailiesButton.Foreground = titleBrush;
+            FractalsCMButton.Foreground = mutedBrush;
+
+            FractalsTodayList.ItemsSource = schedule.FractalsToday.Fractals;
+            FractalsTomorrowList.ItemsSource = schedule.FractalsTomorrow.Fractals;
+            _ = LoadInstabilityIconsAsync(schedule.FractalsToday.Fractals, schedule.FractalsTomorrow.Fractals);
+        }
+    }
+
     public void RefreshData()
     {
         var schedule = _scheduleService.GetSchedule();
-        FractalsTodayList.ItemsSource = schedule.FractalsToday.Fractals;
-        FractalsTomorrowList.ItemsSource = schedule.FractalsTomorrow.Fractals;
         BountiesTodayList.ItemsSource = schedule.BountiesToday.Bounties;
         BountiesTomorrowList.ItemsSource = schedule.BountiesTomorrow.Bounties;
         _ = LoadBountyIconsAsync(schedule.BountiesToday.Bounties, schedule.BountiesTomorrow.Bounties);
-        _ = LoadInstabilityIconsAsync(schedule.FractalsToday.Fractals, schedule.FractalsTomorrow.Fractals);
+        ApplyFractalsMode(schedule);
     }
 
     private async Task LoadInstabilityIconsAsync(IEnumerable<FractalEntryViewModel> today, IEnumerable<FractalEntryViewModel> tomorrow)

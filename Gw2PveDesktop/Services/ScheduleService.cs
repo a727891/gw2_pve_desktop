@@ -67,9 +67,47 @@ public class ScheduleService
         {
             FractalsToday = GetFractalsForDate(today),
             FractalsTomorrow = GetFractalsForDate(tomorrow),
+            FractalsCM = GetCMFractalsForDate(today),
             BountiesToday = GetBountiesForDate(today),
             BountiesTomorrow = GetBountiesForDate(tomorrow)
         };
+    }
+
+    private FractalDayViewModel GetCMFractalsForDate(DateTime date)
+    {
+        var result = new FractalDayViewModel();
+        if (_fractalMaps == null || _instabilities == null) return result;
+        if (_fractalMaps.ChallengeMotes == null || _fractalMaps.ChallengeMotes.Count == 0) return result;
+        if (_fractalMaps.Scales == null) return result;
+
+        var dayIndex = DayOfYearIndexService.DayOfYearIndex(date);
+
+        foreach (var scale in _fractalMaps.ChallengeMotes)
+        {
+            if (!_fractalMaps.Scales.TryGetValue(scale.ToString(), out var mapKey) || string.IsNullOrEmpty(mapKey)) continue;
+            if (!_fractalMaps.Maps.TryGetValue(mapKey, out var map)) continue;
+
+            var label = map.LocalizedNames?.En ?? map.Label ?? mapKey;
+
+            var instabList = new List<InstabilityEntryViewModel>();
+            if (_instabilities.Instabilities.TryGetValue(scale.ToString(), out var days) && dayIndex < days.Count)
+            {
+                var ids = days[dayIndex];
+                foreach (var id in ids)
+                {
+                    if (id >= 0 && id < _instabilities.InstabilityNames.Count)
+                    {
+                        var name = _instabilities.InstabilityNames[id];
+                        var assetId = _fractalMaps.InstabilityAssets.TryGetValue(name, out var aid) ? aid : (int?)null;
+                        instabList.Add(new InstabilityEntryViewModel { Name = name, AssetId = assetId });
+                    }
+                }
+            }
+
+            result.Fractals.Add(new FractalEntryViewModel { Name = label, Instabilities = instabList });
+        }
+
+        return result;
     }
 
     private FractalDayViewModel GetFractalsForDate(DateTime date)
@@ -148,6 +186,7 @@ public class ScheduleViewModel
 {
     public FractalDayViewModel FractalsToday { get; set; } = new();
     public FractalDayViewModel FractalsTomorrow { get; set; } = new();
+    public FractalDayViewModel FractalsCM { get; set; } = new();
     public BountyDayViewModel BountiesToday { get; set; } = new();
     public BountyDayViewModel BountiesTomorrow { get; set; } = new();
 }
