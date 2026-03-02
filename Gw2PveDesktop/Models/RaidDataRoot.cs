@@ -31,6 +31,9 @@ public class RaidEncounter
     [JsonPropertyName("name")]
     public string Name { get; set; } = "";
 
+    [JsonPropertyName("assetId")]
+    public int AssetId { get; set; }
+
     [JsonPropertyName("localizedNames")]
     public RaidLocalizedNames? LocalizedNames { get; set; }
 }

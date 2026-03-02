@@ -10,12 +10,14 @@ namespace Gw2PveDesktop;
 public partial class PopupWindow : Window
 {
     private readonly ScheduleService _scheduleService;
+    private readonly BountyIconCacheService _iconCache;
     private readonly DispatcherTimer _countdownTimer;
     private bool _wasBeforeReset = true;
 
-    public PopupWindow(ScheduleService scheduleService)
+    public PopupWindow(ScheduleService scheduleService, BountyIconCacheService iconCache)
     {
         _scheduleService = scheduleService;
+        _iconCache = iconCache;
         InitializeComponent();
         StateChanged += PopupWindow_StateChanged;
         Closing += PopupWindow_Closing;
@@ -95,5 +97,31 @@ public partial class PopupWindow : Window
         FractalsTomorrowList.ItemsSource = schedule.FractalsTomorrow.Fractals;
         BountiesTodayList.ItemsSource = schedule.BountiesToday.Bounties;
         BountiesTomorrowList.ItemsSource = schedule.BountiesTomorrow.Bounties;
+        _ = LoadBountyIconsAsync(schedule.BountiesToday.Bounties, schedule.BountiesTomorrow.Bounties);
+        _ = LoadInstabilityIconsAsync(schedule.FractalsToday.Fractals, schedule.FractalsTomorrow.Fractals);
+    }
+
+    private async Task LoadInstabilityIconsAsync(IEnumerable<FractalEntryViewModel> today, IEnumerable<FractalEntryViewModel> tomorrow)
+    {
+        var allInstabilities = today.Concat(tomorrow).SelectMany(f => f.Instabilities);
+        foreach (var entry in allInstabilities)
+        {
+            if (entry.AssetId is not { } assetId) continue;
+            var path = await _iconCache.GetImagePathAsync(entry.AssetId).ConfigureAwait(false);
+            if (path != null)
+                Dispatcher.Invoke(() => entry.ImagePath = path);
+        }
+    }
+
+    private async Task LoadBountyIconsAsync(IEnumerable<BountyEntryViewModel> today, IEnumerable<BountyEntryViewModel> tomorrow)
+    {
+        var all = today.Concat(tomorrow);
+        foreach (var entry in all)
+        {
+            if (entry.AssetId is not { } assetId) continue;
+            var path = await _iconCache.GetImagePathAsync(entry.AssetId).ConfigureAwait(false);
+            if (path != null)
+                Dispatcher.Invoke(() => entry.ImagePath = path);
+        }
     }
 }

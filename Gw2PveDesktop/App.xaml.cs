@@ -22,6 +22,7 @@ public partial class App : Application
     private PopupWindow? _popup;
     private readonly DataService _dataService;
     private readonly ScheduleService _scheduleService;
+    private readonly BountyIconCacheService _iconCache;
 
     public const string StaticHostUrl = "https://bhm.blishhud.com/Soeed.RaidClears/static/";
     public const string StaticHostApiVersion = "v2/";
@@ -31,6 +32,7 @@ public partial class App : Application
     {
         _dataService = new DataService(BaseUrl);
         _scheduleService = new ScheduleService();
+        _iconCache = new BountyIconCacheService();
     }
 
     private void Application_Startup(object sender, StartupEventArgs e)
@@ -109,7 +111,7 @@ public partial class App : Application
     {
         if (_popup == null)
         {
-            _popup = new PopupWindow(_scheduleService);
+            _popup = new PopupWindow(_scheduleService, _iconCache);
             _popup.Closed += (_, _) => _popup = null;
         }
 
@@ -127,7 +129,7 @@ public partial class App : Application
     {
         if (_popup == null)
         {
-            _popup = new PopupWindow(_scheduleService);
+            _popup = new PopupWindow(_scheduleService, _iconCache);
             _popup.Closed += (_, _) => _popup = null;
         }
 
@@ -149,7 +151,8 @@ public partial class App : Application
             var instabilities = await _dataService.GetFractalInstabilitiesAsync();
             var bounties = await _dataService.GetDailyBountiesAsync();
             var raidData = await _dataService.GetRaidDataAsync();
-            _scheduleService.LoadData(maps, instabilities, bounties, raidData);
+            var strikeData = await _dataService.GetStrikeDataAsync();
+            _scheduleService.LoadData(maps, instabilities, bounties, raidData, strikeData);
             _popup?.RefreshData();
         }
         catch (Exception ex)

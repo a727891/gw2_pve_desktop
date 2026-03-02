@@ -9,6 +9,9 @@ public class FractalMapsRoot
 
     [JsonPropertyName("maps")]
     public Dictionary<string, FractalMapEntry> Maps { get; set; } = new();
+
+    [JsonPropertyName("instabilityAssets")]
+    public Dictionary<string, int> InstabilityAssets { get; set; } = new();
 }
 
 public class FractalMapEntry

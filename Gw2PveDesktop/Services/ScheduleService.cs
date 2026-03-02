@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Gw2PveDesktop.Models;
 
 namespace Gw2PveDesktop.Services;
@@ -7,32 +9,50 @@ public class ScheduleService
     private FractalMapsRoot? _fractalMaps;
     private FractalInstabilitiesRoot? _instabilities;
     private DailyBountiesRoot? _bounties;
-    private Dictionary<string, string> _encounterDisplayNames = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, (string Name, int? AssetId)> _encounterInfo = new(StringComparer.OrdinalIgnoreCase);
 
-    public void LoadData(FractalMapsRoot? fractalMaps, FractalInstabilitiesRoot? instabilities, DailyBountiesRoot? bounties, RaidDataRoot? raidData = null)
+    public void LoadData(FractalMapsRoot? fractalMaps, FractalInstabilitiesRoot? instabilities, DailyBountiesRoot? bounties, RaidDataRoot? raidData = null, StrikeDataRoot? strikeData = null)
     {
         _fractalMaps = fractalMaps;
         _instabilities = instabilities;
         _bounties = bounties;
-        _encounterDisplayNames = BuildEncounterDisplayNames(raidData);
+        _encounterInfo = BuildEncounterInfo(raidData, strikeData);
     }
 
-    private static Dictionary<string, string> BuildEncounterDisplayNames(RaidDataRoot? raidData)
+    private static Dictionary<string, (string Name, int? AssetId)> BuildEncounterInfo(RaidDataRoot? raidData, StrikeDataRoot? strikeData)
     {
-        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (raidData?.Expansions == null) return map;
-        foreach (var expansion in raidData.Expansions)
+        var map = new Dictionary<string, (string Name, int? AssetId)>(StringComparer.OrdinalIgnoreCase);
+        if (raidData?.Expansions != null)
         {
-            if (expansion.Wings == null) continue;
-            foreach (var wing in expansion.Wings)
+            foreach (var expansion in raidData.Expansions)
             {
-                if (wing.Encounters == null) continue;
-                foreach (var enc in wing.Encounters)
+                if (expansion.Wings == null) continue;
+                foreach (var wing in expansion.Wings)
                 {
-                    if (string.IsNullOrEmpty(enc.ApiId)) continue;
-                    var displayName = enc.LocalizedNames?.En ?? enc.Name ?? enc.ApiId;
-                    if (!string.IsNullOrEmpty(displayName))
-                        map[enc.ApiId] = displayName;
+                    if (wing.Encounters == null) continue;
+                    foreach (var enc in wing.Encounters)
+                    {
+                        if (string.IsNullOrEmpty(enc.ApiId)) continue;
+                        var displayName = enc.LocalizedNames?.En ?? enc.Name ?? enc.ApiId;
+                        if (string.IsNullOrEmpty(displayName)) continue;
+                        var assetId = enc.AssetId != 0 ? enc.AssetId : (int?)null;
+                        map[enc.ApiId] = (displayName, assetId);
+                    }
+                }
+            }
+        }
+        if (strikeData?.Expansions != null)
+        {
+            foreach (var expansion in strikeData.Expansions)
+            {
+                if (expansion.Missions == null) continue;
+                foreach (var mission in expansion.Missions)
+                {
+                    if (string.IsNullOrEmpty(mission.Id)) continue;
+                    var displayName = mission.LocalizedNames?.En ?? mission.Name ?? mission.Id;
+                    if (string.IsNullOrEmpty(displayName)) continue;
+                    var assetId = mission.AssetId != 0 ? mission.AssetId : (int?)null;
+                    map[mission.Id] = (displayName, assetId);
                 }
             }
         }
@@ -72,18 +92,22 @@ public class ScheduleService
             var t4Scale = map.Scales.Where(s => s >= 76 && s <= 100).Cast<int?>().Max();
             if (t4Scale == null) t4Scale = map.Scales.DefaultIfEmpty(0).Max();
 
-            var instabNames = new List<string>();
+            var instabList = new List<InstabilityEntryViewModel>();
             if (t4Scale.HasValue && _instabilities.Instabilities.TryGetValue(t4Scale.Value.ToString(), out var days) && dayIndex < days.Count)
             {
                 var ids = days[dayIndex];
                 foreach (var id in ids)
                 {
                     if (id >= 0 && id < _instabilities.InstabilityNames.Count)
-                        instabNames.Add(_instabilities.InstabilityNames[id]);
+                    {
+                        var name = _instabilities.InstabilityNames[id];
+                        var assetId = _fractalMaps.InstabilityAssets.TryGetValue(name, out var aid) ? aid : (int?)null;
+                        instabList.Add(new InstabilityEntryViewModel { Name = name, AssetId = assetId });
+                    }
                 }
             }
 
-            result.Fractals.Add(new FractalEntryViewModel { Name = label, Instabilities = instabNames });
+            result.Fractals.Add(new FractalEntryViewModel { Name = label, Instabilities = instabList });
         }
 
         return result;
@@ -100,15 +124,17 @@ public class ScheduleService
             if (slot.Encounters.Count == 0) continue;
             var idx = (dayIndex + slot.Offset) % slot.Encounters.Count;
             var encounterId = slot.Encounters[idx];
-            result.Bounties.Add(GetBountyDisplayName(encounterId));
+            result.Bounties.Add(GetBountyEntry(encounterId));
         }
 
         return result;
     }
 
-    private string GetBountyDisplayName(string encounterId)
+    private BountyEntryViewModel GetBountyEntry(string encounterId)
     {
-        return _encounterDisplayNames.TryGetValue(encounterId, out var name) ? name : ToTitleCase(encounterId);
+        if (_encounterInfo.TryGetValue(encounterId, out var info))
+            return new BountyEntryViewModel { Name = info.Name, AssetId = info.AssetId };
+        return new BountyEntryViewModel { Name = ToTitleCase(encounterId), AssetId = null };
     }
 
     private static string ToTitleCase(string id)
@@ -134,10 +160,46 @@ public class FractalDayViewModel
 public class FractalEntryViewModel
 {
     public string Name { get; set; } = "";
-    public List<string> Instabilities { get; set; } = new();
+    public List<InstabilityEntryViewModel> Instabilities { get; set; } = new();
+}
+
+public class InstabilityEntryViewModel : INotifyPropertyChanged
+{
+    private string _imagePath = "";
+
+    public string Name { get; set; } = "";
+    public int? AssetId { get; set; }
+
+    public string ImagePath
+    {
+        get => _imagePath;
+        set { _imagePath = value ?? ""; OnPropertyChanged(); }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
 
 public class BountyDayViewModel
 {
-    public List<string> Bounties { get; set; } = new();
+    public List<BountyEntryViewModel> Bounties { get; set; } = new();
+}
+
+public class BountyEntryViewModel : INotifyPropertyChanged
+{
+    private string _imagePath = "";
+
+    public string Name { get; set; } = "";
+    public int? AssetId { get; set; }
+
+    public string ImagePath
+    {
+        get => _imagePath;
+        set { _imagePath = value ?? ""; OnPropertyChanged(); }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

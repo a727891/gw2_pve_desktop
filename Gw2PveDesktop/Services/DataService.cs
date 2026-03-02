@@ -38,4 +38,10 @@ public class DataService
         var url = _baseUrl + "raid_data.json";
         return await _http.GetFromJsonAsync<RaidDataRoot>(url, ct);
     }
+
+    public async Task<StrikeDataRoot?> GetStrikeDataAsync(CancellationToken ct = default)
+    {
+        var url = _baseUrl + "strike_data.json";
+        return await _http.GetFromJsonAsync<StrikeDataRoot>(url, ct);
+    }
 }
