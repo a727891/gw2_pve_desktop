@@ -24,6 +24,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Assets\1128644.png" />
+    <Resource Include="Assets\menomonia.ttf" />
   </ItemGroup>
 
 </Project>

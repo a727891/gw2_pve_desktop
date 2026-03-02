@@ -33,6 +33,35 @@ public partial class PopupWindow : Window
         _countdownTimer.Tick += (_, _) => UpdateCountdown();
         _countdownTimer.Start();
         UpdateCountdown();
+
+        Loaded += PopupWindow_Loaded;
+    }
+
+    private const int BackgroundAssetId = 1909321;
+
+    private async void PopupWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        var path = await _iconCache.GetImagePathAsync(BackgroundAssetId).ConfigureAwait(false);
+        Dispatcher.Invoke(() =>
+        {
+            if (path != null)
+            {
+                try
+                {
+                    var image = BitmapFrame.Create(new Uri(path, UriKind.Absolute), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                    var brush = new ImageBrush(image)
+                    {
+                        Stretch = Stretch.UniformToFill,
+                        AlignmentX = AlignmentX.Center,
+                        AlignmentY = AlignmentY.Center
+                    };
+                    RootBorder.Background = brush;
+                    return;
+                }
+                catch { }
+            }
+            RootBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2a, 0x2a, 0x2e));
+        });
     }
 
     private void PopupWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
