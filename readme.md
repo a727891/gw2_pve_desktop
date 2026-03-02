@@ -74,4 +74,4 @@ Gw2PveDesktop/
 
 ## License
 
-See repository for license information.
+This project is licensed under the [MIT License](LICENSE): free to use, modify, and distribute, with no warranty and no liability.
