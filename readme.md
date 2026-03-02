@@ -2,6 +2,10 @@
 
 A Windows system-tray app for **Guild Wars 2** that shows daily **Raid Bounties** and **Fractals** (T4 dailies and Challenge Motes) with a Guild Wars–style popup.
 
+## Example
+
+![Popup screenshot](ref/example.png)
+
 ## Features
 
 - **Raid Bounties** — Today and tomorrow’s bounty bosses with icons
