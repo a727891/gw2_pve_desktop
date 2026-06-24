@@ -1,12 +1,15 @@
-using System.Reflection;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Gw2PveDesktop.Services;
 using Gw2PveDesktop.ViewModels;
 
-namespace Gw2PveDesktop;
+namespace Gw2PveDesktop.Avalonia;
 
 public partial class PopupWindow : Window
 {
@@ -16,19 +19,27 @@ public partial class PopupWindow : Window
     private bool _wasBeforeReset = true;
     private bool _showFractalCMs;
 
+    private const int BackgroundAssetId = 1909321;
+
     public PopupWindow(ScheduleService scheduleService, BountyIconCacheService iconCache)
     {
         _scheduleService = scheduleService;
         _iconCache = iconCache;
         InitializeComponent();
-        StateChanged += PopupWindow_StateChanged;
         Closing += PopupWindow_Closing;
+        Opened += PopupWindow_Opened;
 
-        var iconSource = LoadWindowIconFromEmbeddedPng();
-        if (iconSource != null)
-            Icon = iconSource;
+        try
+        {
+            var iconStream = AssetLoader.Open(new Uri("avares://Gw2PveDesktop/Assets/1128644.png"));
+            Icon = new WindowIcon(iconStream);
+        }
+        catch
+        {
+            // Optional window icon.
+        }
 
-        _countdownTimer = new DispatcherTimer(DispatcherPriority.Background)
+        _countdownTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
@@ -39,46 +50,54 @@ public partial class PopupWindow : Window
         Loaded += PopupWindow_Loaded;
     }
 
-    private const int BackgroundAssetId = 1909321;
+    private void PopupWindow_Opened(object? sender, EventArgs e)
+    {
+        PositionNearTray();
+    }
 
-    private async void PopupWindow_Loaded(object sender, RoutedEventArgs e)
+    private void PositionNearTray()
+    {
+        var screen = Screens.Primary ?? Screens.All.FirstOrDefault();
+        if (screen == null) return;
+
+        var workingArea = screen.WorkingArea;
+        Position = new PixelPoint(
+            workingArea.Right - (int)Bounds.Width - 10,
+            workingArea.Bottom - (int)Bounds.Height - 10);
+    }
+
+    private async void PopupWindow_Loaded(object? sender, RoutedEventArgs e)
     {
         var path = await _iconCache.GetImagePathAsync(BackgroundAssetId).ConfigureAwait(false);
-        Dispatcher.Invoke(() =>
+        await Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (path != null)
             {
                 try
                 {
-                    var image = BitmapFrame.Create(new Uri(path, UriKind.Absolute), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-                    var brush = new ImageBrush(image)
+                    var image = new Bitmap(path);
+                    RootBorder.Background = new ImageBrush(image)
                     {
                         Stretch = Stretch.UniformToFill,
                         AlignmentX = AlignmentX.Center,
                         AlignmentY = AlignmentY.Center
                     };
-                    RootBorder.Background = brush;
                     return;
                 }
-                catch { }
+                catch
+                {
+                    // Fall through to solid background.
+                }
             }
-            RootBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2a, 0x2a, 0x2e));
+
+            RootBorder.Background = new SolidColorBrush(Color.FromRgb(0x2a, 0x2a, 0x2e));
         });
     }
 
-    private void PopupWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private void PopupWindow_Closing(object? sender, WindowClosingEventArgs e)
     {
         e.Cancel = true;
         Hide();
-    }
-
-    private void PopupWindow_StateChanged(object? sender, EventArgs e)
-    {
-        if (WindowState == WindowState.Minimized)
-        {
-            WindowState = WindowState.Normal;
-            Hide();
-        }
     }
 
     private void UpdateCountdown()
@@ -100,28 +119,18 @@ public partial class PopupWindow : Window
         }
     }
 
-    /// <summary>Load window icon from embedded PNG (preserves transparency).</summary>
-    private static ImageSource? LoadWindowIconFromEmbeddedPng()
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        var asm = Assembly.GetExecutingAssembly();
-        var name = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith(".1128644.png", StringComparison.OrdinalIgnoreCase));
-        if (name == null) return null;
-        using var stream = asm.GetManifestResourceStream(name);
-        return stream != null ? BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad) : null;
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            BeginMoveDrag(e);
     }
 
-    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
-            DragMove();
-    }
-
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    private void CloseButton_Click(object? sender, RoutedEventArgs e)
     {
         Hide();
     }
 
-    private void FractalsDailiesButton_Click(object sender, RoutedEventArgs e)
+    private void FractalsDailiesButton_Click(object? sender, RoutedEventArgs e)
     {
         if (_showFractalCMs)
         {
@@ -130,7 +139,7 @@ public partial class PopupWindow : Window
         }
     }
 
-    private void FractalsCMButton_Click(object sender, RoutedEventArgs e)
+    private void FractalsCMButton_Click(object? sender, RoutedEventArgs e)
     {
         if (!_showFractalCMs)
         {
@@ -141,13 +150,13 @@ public partial class PopupWindow : Window
 
     private void ApplyFractalsMode(ScheduleViewModel schedule)
     {
-        var titleBrush = (System.Windows.Media.Brush)FindResource("GuildWarsBodyBrush");
-        var mutedBrush = (System.Windows.Media.Brush)FindResource("GuildWarsMutedBrush");
+        var titleBrush = (IBrush)Resources["GuildWarsBodyBrush"]!;
+        var mutedBrush = (IBrush)Resources["GuildWarsMutedBrush"]!;
 
         if (_showFractalCMs)
         {
-            FractalsDailiesPanel.Visibility = Visibility.Collapsed;
-            FractalsCMPanel.Visibility = Visibility.Visible;
+            FractalsDailiesPanel.IsVisible = false;
+            FractalsCMPanel.IsVisible = true;
             FractalsDailiesButton.Foreground = mutedBrush;
             FractalsCMButton.Foreground = titleBrush;
 
@@ -159,8 +168,8 @@ public partial class PopupWindow : Window
         }
         else
         {
-            FractalsDailiesPanel.Visibility = Visibility.Visible;
-            FractalsCMPanel.Visibility = Visibility.Collapsed;
+            FractalsDailiesPanel.IsVisible = true;
+            FractalsCMPanel.IsVisible = false;
             FractalsDailiesButton.Foreground = titleBrush;
             FractalsCMButton.Foreground = mutedBrush;
 
@@ -185,9 +194,9 @@ public partial class PopupWindow : Window
         foreach (var entry in allInstabilities)
         {
             if (entry.AssetId is not { } assetId) continue;
-            var path = await _iconCache.GetImagePathAsync(entry.AssetId).ConfigureAwait(false);
+            var path = await _iconCache.GetImagePathAsync(assetId).ConfigureAwait(false);
             if (path != null)
-                Dispatcher.Invoke(() => entry.ImagePath = path);
+                await Dispatcher.UIThread.InvokeAsync(() => entry.ImagePath = path);
         }
     }
 
@@ -197,9 +206,9 @@ public partial class PopupWindow : Window
         foreach (var entry in all)
         {
             if (entry.AssetId is not { } assetId) continue;
-            var path = await _iconCache.GetImagePathAsync(entry.AssetId).ConfigureAwait(false);
+            var path = await _iconCache.GetImagePathAsync(assetId).ConfigureAwait(false);
             if (path != null)
-                Dispatcher.Invoke(() => entry.ImagePath = path);
+                await Dispatcher.UIThread.InvokeAsync(() => entry.ImagePath = path);
         }
     }
 }

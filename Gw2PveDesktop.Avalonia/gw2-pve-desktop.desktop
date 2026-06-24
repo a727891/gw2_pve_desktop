@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GW2 PvE Desktop
+Comment=Guild Wars 2 daily raid bounties and fractals
+Exec=Gw2PveDesktop
+Icon=gw2-pve-desktop
+Terminal=false
+Categories=Game;Utility;
+StartupNotify=false

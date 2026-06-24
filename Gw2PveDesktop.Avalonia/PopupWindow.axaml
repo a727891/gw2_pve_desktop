@@ -1,0 +1,226 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Gw2PveDesktop.Avalonia.Converters"
+        xmlns:local="using:Gw2PveDesktop.Avalonia"
+        x:Class="Gw2PveDesktop.Avalonia.PopupWindow"
+        Title="GW2 PvE - Raid Bounties &amp; Fractals"
+        SizeToContent="WidthAndHeight"
+        MinHeight="320" MinWidth="400"
+        WindowStartupLocation="Manual"
+        ShowInTaskbar="False"
+        SystemDecorations="None"
+        CanResize="False"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        FontFamily="{x:Static local:FontSetup.GuildWarsFont}">
+    <Window.Resources>
+        <converters:PathToImageSourceConverter x:Key="PathToImageSource"/>
+        <SolidColorBrush x:Key="GuildWarsTitleBrush" Color="#E8DCC8"/>
+        <SolidColorBrush x:Key="GuildWarsHeaderBrush" Color="#D4C4A0"/>
+        <SolidColorBrush x:Key="GuildWarsBodyBrush" Color="#C9B896"/>
+        <SolidColorBrush x:Key="GuildWarsMutedBrush" Color="#A09078"/>
+        <SolidColorBrush x:Key="GuildWarsHeaderBarBackground" Color="#E01c1c20"/>
+        <SolidColorBrush x:Key="GuildWarsHeaderBarBorderBrush" Color="#50C9B896"/>
+    </Window.Resources>
+    <Border x:Name="RootBorder" BorderThickness="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{StaticResource GuildWarsHeaderBarBackground}"
+                    BorderBrush="{StaticResource GuildWarsHeaderBarBorderBrush}" BorderThickness="0,0,0,1"
+                    PointerPressed="TitleBar_PointerPressed" Cursor="SizeAll">
+                <Grid Height="32">
+                    <TextBlock Text="GW2 PvE - Fractals &amp; Bounties" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="12"
+                               Foreground="{StaticResource GuildWarsTitleBrush}"/>
+                    <Button x:Name="CloseButton" Content="✕" HorizontalAlignment="Right" Width="46" Height="28"
+                            Background="Transparent" BorderThickness="0" FontSize="12" Cursor="Hand"
+                            Foreground="{StaticResource GuildWarsTitleBrush}"
+                            Click="CloseButton_Click"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="12" Grid.RowSpan="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Raid Bounties" FontWeight="Bold" FontSize="16" Margin="0,0,0,6"
+                           Foreground="{StaticResource GuildWarsHeaderBrush}"/>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="200"/>
+                        <ColumnDefinition Width="*" MinWidth="200"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Today" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="{StaticResource GuildWarsBodyBrush}"/>
+                        <ItemsControl x:Name="BountiesTodayList" Margin="16,0,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Image Width="32" Height="32" Margin="0,0,8,0" VerticalAlignment="Center"
+                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="150" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="Tomorrow" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="{StaticResource GuildWarsBodyBrush}"/>
+                        <ItemsControl x:Name="BountiesTomorrowList" Margin="16,0,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Image Width="32" Height="32" Margin="0,0,8,0" VerticalAlignment="Center"
+                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="150" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,6">
+                    <TextBlock Text="Fractals" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"
+                               Foreground="{StaticResource GuildWarsHeaderBrush}"/>
+                    <TextBlock Text=" " VerticalAlignment="Center"/>
+                    <Button x:Name="FractalsDailiesButton" Content="Dailies" FontWeight="SemiBold" FontSize="12"
+                            Background="Transparent" BorderThickness="0" Padding="4,0" Cursor="Hand"
+                            Foreground="{StaticResource GuildWarsBodyBrush}" Click="FractalsDailiesButton_Click"/>
+                    <TextBlock Text=" | " VerticalAlignment="Center" Foreground="{StaticResource GuildWarsMutedBrush}"/>
+                    <Button x:Name="FractalsCMButton" Content="CMs" FontWeight="SemiBold" FontSize="12"
+                            Background="Transparent" BorderThickness="0" Padding="4,0" Cursor="Hand"
+                            Foreground="{StaticResource GuildWarsMutedBrush}" Click="FractalsCMButton_Click"/>
+                </StackPanel>
+
+                <Grid x:Name="FractalsDailiesPanel" Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="0"/>
+                        <ColumnDefinition Width="*" MinWidth="0"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Today" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="{StaticResource GuildWarsBodyBrush}"/>
+                        <ItemsControl x:Name="FractalsTodayList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="160" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                        <ItemsControl ItemsSource="{Binding Instabilities}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="16,0,0,2">
+                                                        <Image Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"
+                                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                                        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="{StaticResource GuildWarsMutedBrush}" VerticalAlignment="Center"
+                                                                   MaxWidth="140" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="Tomorrow" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="{StaticResource GuildWarsBodyBrush}"/>
+                        <ItemsControl x:Name="FractalsTomorrowList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="160" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                        <ItemsControl ItemsSource="{Binding Instabilities}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="16,0,0,2">
+                                                        <Image Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"
+                                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                                        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="{StaticResource GuildWarsMutedBrush}" VerticalAlignment="Center"
+                                                                   MaxWidth="140" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="FractalsCMPanel" Grid.Row="3" IsVisible="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="0"/>
+                        <ColumnDefinition Width="*" MinWidth="0"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text=" " FontWeight="SemiBold" Margin="0,0,0,4" Foreground="Transparent"/>
+                        <ItemsControl x:Name="FractalsCMLeftList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="160" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                        <ItemsControl ItemsSource="{Binding Instabilities}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="16,0,0,2">
+                                                        <Image Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"
+                                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                                        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="{StaticResource GuildWarsMutedBrush}" VerticalAlignment="Center"
+                                                                   MaxWidth="140" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text=" " FontWeight="SemiBold" Margin="0,0,0,4" Foreground="Transparent"/>
+                        <ItemsControl x:Name="FractalsCMRightList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource GuildWarsBodyBrush}"
+                                                   MaxWidth="160" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                        <ItemsControl ItemsSource="{Binding Instabilities}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="16,0,0,2">
+                                                        <Image Width="20" Height="20" Margin="0,0,6,0" VerticalAlignment="Center"
+                                                               Source="{Binding ImagePath, Converter={StaticResource PathToImageSource}}"/>
+                                                        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="{StaticResource GuildWarsMutedBrush}" VerticalAlignment="Center"
+                                                                   MaxWidth="140" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock x:Name="ResetCountdownText" Grid.Row="4" HorizontalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource GuildWarsMutedBrush}" Margin="0,12,0,0"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

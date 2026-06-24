@@ -11,6 +11,7 @@ bld/
 [Ll]og/
 [Ll]ogs/
 publish/
+artifacts/
 
 # Visual Studio
 .vs/

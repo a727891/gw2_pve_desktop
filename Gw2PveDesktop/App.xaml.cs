@@ -25,13 +25,9 @@ public partial class App : Application
     private readonly ScheduleService _scheduleService;
     private readonly BountyIconCacheService _iconCache;
 
-    public const string StaticHostUrl = "https://bhm.blishhud.com/Soeed.RaidClears/static/";
-    public const string StaticHostApiVersion = "v2/";
-    public static string BaseUrl => StaticHostUrl + StaticHostApiVersion;
-
     public App()
     {
-        _dataService = new DataService(BaseUrl);
+        _dataService = new DataService(AppConstants.BaseUrl);
         _scheduleService = new ScheduleService();
         _iconCache = new BountyIconCacheService();
     }
