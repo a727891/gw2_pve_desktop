@@ -90,17 +90,17 @@ fi
 echo "Building AppImage..."
 ARCH=x86_64 "$APPIMAGETOOL" --appimage-extract-and-run "$APPDIR" "$OUTPUT"
 
-ICON_EXPORT="$ROOT/artifacts/${ICON_NAME}.png"
-cp "$APPDIR/${ICON_NAME}.png" "$ICON_EXPORT"
+# ICON_EXPORT="$ROOT/artifacts/${ICON_NAME}.png"
+# cp "$APPDIR/${ICON_NAME}.png" "$ICON_EXPORT"
 
-ICON_URI="file://$(realpath "$ICON_EXPORT")"
-echo "Setting Dolphin custom icon..."
-if command -v gio >/dev/null 2>&1; then
-  gio set "$OUTPUT" metadata::custom-icon "$ICON_URI"
-  echo "Applied: gio set \"$OUTPUT\" metadata::custom-icon \"$ICON_URI\""
-else
-  echo "gio not found; run manually after build:"
-  echo "  gio set \"$OUTPUT\" metadata::custom-icon \"$ICON_URI\""
-fi
+# ICON_URI="file://$(realpath "$ICON_EXPORT")"
+# echo "Setting Dolphin custom icon..."
+# if command -v gio >/dev/null 2>&1; then
+#   gio set "$OUTPUT" metadata::custom-icon "$ICON_URI"
+#   echo "Applied: gio set \"$OUTPUT\" metadata::custom-icon \"$ICON_URI\""
+# else
+#   echo "gio not found; run manually after build:"
+#   echo "  gio set \"$OUTPUT\" metadata::custom-icon \"$ICON_URI\""
+# fi
 
 echo "Created $OUTPUT"
