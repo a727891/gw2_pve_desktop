@@ -21,17 +21,17 @@ jobs:
       - name: Build Avalonia
         run: dotnet build Gw2PveDesktop.Avalonia/Gw2PveDesktop.Avalonia.csproj -c Release
 
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
+  # build-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+  #     - uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: 8.0.x
 
-      - name: Build Core
-        run: dotnet build Gw2PveDesktop.Core/Gw2PveDesktop.Core.csproj -c Release
+  #     - name: Build Core
+  #       run: dotnet build Gw2PveDesktop.Core/Gw2PveDesktop.Core.csproj -c Release
 
-      - name: Build WPF
-        run: dotnet build Gw2PveDesktop/Gw2PveDesktop.csproj -c Release
+  #     - name: Build WPF
+  #       run: dotnet build Gw2PveDesktop/Gw2PveDesktop.csproj -c Release

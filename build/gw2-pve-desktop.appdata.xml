@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.a727891.gw2_pve_desktop</id>
+  <name>GW2 PvE Desktop</name>
+  <summary>Guild Wars 2 daily raid bounties and fractals in the system tray</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      GW2 PvE Desktop is a system-tray utility for Guild Wars 2 that shows daily
+      raid bounties, tier 4 fractal dailies, challenge mote fractals, and the
+      daily reset countdown in a Guild Wars-style popup window.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/a727891/gw2_pve_desktop</url>
+  <launchable type="desktop-id">gw2-pve-desktop.desktop</launchable>
+  <icon type="stock">gw2-pve-desktop</icon>
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+</component>

@@ -92,6 +92,27 @@ chmod +x build/appimage.sh
 ./build/appimage.sh 1.0.0    # optional version label in filename
 ```
 
+The build also writes `artifacts/gw2-pve-desktop.png` and applies a Dolphin custom icon to the new AppImage when possible.
+
+**Dolphin file icon:** The icon is embedded in the AppImage, but Dolphin needs system support to display it (the generic gear/arrow is shown otherwise). On Nobara/Fedora:
+
+```bash
+sudo dnf install libappimage
+```
+
+Then in Dolphin: **Settings → Configure Dolphin → General → Previews** → enable **AppImage application bundle**. Clear cached thumbnails if needed:
+
+```bash
+rm -rf ~/.cache/thumbnails/*
+kbuildsycoca6 --noincremental
+```
+
+For a one-off fix on an already-built AppImage:
+
+```bash
+gio set ./artifacts/Gw2PveDesktop-*.AppImage metadata::custom-icon file://$(pwd)/artifacts/gw2-pve-desktop.png
+```
+
 Optional: install the desktop entry and icon:
 
 ```bash
